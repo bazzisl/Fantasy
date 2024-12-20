@@ -149,8 +149,13 @@ namespace Fantasy.Timer
         /// <param name="time">等待的时间长度。</param>
         /// <param name="cancellationToken">取消令牌。</param>
         /// <returns>等待是否成功。</returns>
-        public async UniTask<bool> WaitAsync(long time)
+        public async UniTask<bool> WaitAsync(long time, CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
+            
             if (time <= 0)
             {
                 return true;
@@ -174,6 +179,7 @@ namespace Fantasy.Timer
             try
             {
                 tcs?.AddOnCancelAction(CancelActionVoid);
+                tcs.AttachCancellation(cancellationToken);
                 AddTimer(ref timerAction);
                 result = await tcs.Task;
             }
@@ -191,8 +197,13 @@ namespace Fantasy.Timer
         /// <param name="tillTime">等待的目标时间。</param>
         /// <param name="cancellationToken">取消令牌。</param>
         /// <returns>等待是否成功。</returns>
-        public async UniTask<bool> WaitTillAsync(long tillTime)
+        public async UniTask<bool> WaitTillAsync(long tillTime, CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
+            
             var now = Now();
 
             if (now >= tillTime)
@@ -217,6 +228,7 @@ namespace Fantasy.Timer
             try
             {
                 tcs?.AddOnCancelAction(CancelActionVoid);
+                tcs.AttachCancellation(cancellationToken);
                 AddTimer(ref timerAction);
                 result = await tcs.Task;
             }

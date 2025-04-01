@@ -1,9 +1,9 @@
 #if FANTASY_NET
-using System.Reflection;
 using CommandLine;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using Fantasy.Helper;
+using Fantasy.IdFactory;
 using Fantasy.Network;
 using Fantasy.Serialize;
 // ReSharper disable FunctionNeverReturns
@@ -20,8 +20,8 @@ public static class Entry
     /// <summary>
     /// 框架初始化
     /// </summary>
-    /// <param name="assemblies"></param>
-    public static void Initialize(params System.Reflection.Assembly[] assemblies)
+    /// <param name="assemblies">注册的Assembly</param>
+    public static async FTask Initialize(params System.Reflection.Assembly[] assemblies)
     {
         // 解析命令行参数
         Parser.Default.ParseArguments<CommandLineOptions>(Environment.GetCommandLineArgs())
@@ -45,9 +45,8 @@ public static class Entry
                 throw new NotSupportedException($"ProcessType is {ProcessDefine.Options.ProcessType} Unrecognized!");
             }
         }
-        
         // 初始化程序集管理系统
-        AssemblySystem.Initialize(assemblies);
+        await AssemblySystem.InnerInitialize(assemblies);
         // 初始化序列化
         SerializerManager.Initialize();
         // 精度处理（只针对Windows下有作用、其他系统没有这个问题、一般也不会用Windows来做服务器的）
@@ -75,7 +74,7 @@ public static class Entry
     /// <param name="assemblies"></param>
     public static async FTask Start(params System.Reflection.Assembly[] assemblies)
     {
-        Initialize(assemblies);
+        await Initialize(assemblies);
         await Start();
     }
 

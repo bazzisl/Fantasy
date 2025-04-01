@@ -46,6 +46,7 @@ namespace Fantasy.ConfigTable
                    
                     var configFile = GetConfigPath(dataConfig);
                     var bytes = File.ReadAllBytes(configFile);
+                    // Log.Debug($"dataConfig:{dataConfig} {bytes.Length}");
                     var data = SerializerManager.GetSerializer(FantasySerializerType.ProtoBuf).Deserialize<T>(bytes);
                     ConfigDic[dataConfig] = data;
                     return data;

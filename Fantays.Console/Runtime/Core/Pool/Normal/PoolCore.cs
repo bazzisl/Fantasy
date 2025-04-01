@@ -41,7 +41,7 @@ namespace Fantasy.Pool
         {
             if (!_poolQueue.TryDequeue(typeof(T), out var queue))
             {
-                return new T();
+                queue = new T();
             }
             
             queue.SetIsPool(true);
@@ -141,7 +141,7 @@ namespace Fantasy.Pool
         protected PoolCore(int maxCapacity)
         {
             _maxCapacity = maxCapacity;
-        }
+        } 
 
         /// <summary>
         /// 租借
@@ -149,14 +149,19 @@ namespace Fantasy.Pool
         /// <returns></returns>
         public virtual T Rent()
         {
+            T dequeue;
+            
             if (_poolQueue.Count == 0)
             {
-                return new T();
+                dequeue = new T();
             }
-
-            var dequeue = _poolQueue.Dequeue();
+            else
+            {
+                _poolCount--;
+                dequeue = _poolQueue.Dequeue();
+            }
+            
             dequeue.SetIsPool(true);
-            _poolCount--;
             return dequeue;
         }
         

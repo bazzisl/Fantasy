@@ -4,16 +4,53 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Fantasy.Async;
 using Fantasy.Entitas;
+using MongoDB.Driver;
+// ReSharper disable InconsistentNaming
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 #pragma warning disable CS8625
 
 namespace Fantasy.DataBase
 {
     /// <summary>
+    /// 数据库设置助手
+    /// </summary>
+    public static class DataBaseSetting
+    {
+        /// <summary>
+        /// 初始化自定义委托，当设置了这个委托后，就不会自动创建MongoClient，需要自己在委托里创建MongoClient。
+        /// </summary>
+        public static Func<DataBaseCustomConfig, MongoClient>? MongoDBCustomInitialize;
+    }
+
+    /// <summary>
+    /// MongoDB自定义连接参数
+    /// </summary>
+    public sealed class DataBaseCustomConfig
+    {
+        /// <summary>
+        /// 当前Scene
+        /// </summary>
+        public Scene Scene;
+        /// <summary>
+        /// 连接字符串
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// 数据库名字
+        /// </summary>
+        public string DBName;
+    }
+    
+    /// <summary>
     /// 表示用于执行各种数据库操作的数据库接口。
     /// </summary>
-    public interface IDataBase
+    public interface IDataBase : IDisposable
     {
+        /// <summary>
+        /// 获得当前数据的类型
+        /// </summary>
+        public DataBaseType GetDataBaseType { get;}
         /// <summary>
         /// 初始化数据库连接。
         /// </summary>
@@ -78,6 +115,10 @@ namespace Fantasy.DataBase
         /// 从指定集合中按页查询满足给定筛选条件的类型 <typeparamref name="T"/> 的实体列表。
         /// </summary>
         FTask<List<T>> Query<T>(Expression<Func<T, bool>> filter, bool isDeserialize = false, string collection = null) where T : Entity;
+        /// <summary>
+        /// 查询指定集合中满足给定筛选条件的类型 <typeparamref name="T"/> 实体列表，仅返回指定字段的数据。
+        /// </summary>
+        FTask<List<T>> Query<T>(Expression<Func<T, bool>> filter, Expression<Func<T, object>>[] cols, bool isDeserialize = false, string collection = null) where T : Entity;
         /// <summary>
         /// 查询指定 ID 的多个集合，将结果存储在给定的实体列表中。
         /// </summary>

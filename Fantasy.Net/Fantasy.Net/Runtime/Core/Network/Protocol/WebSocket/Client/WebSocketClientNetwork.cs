@@ -42,26 +42,37 @@ namespace Fantasy.Network.WebSocket
                 return;
             }
 
-            _isInnerDispose = true;
-            if (!_cancellationTokenSource.IsCancellationRequested)
+            try
             {
-                try
-                {
-                    _cancellationTokenSource.Cancel();
-                }
-                catch (OperationCanceledException)
-                {
-                    // 通常情况下，此处的异常可以忽略
-                }
-            }
+                _isInnerDispose = true;
 
-            base.Dispose();
-            ClearConnectTimeout();
-            WebSocketClientDisposeAsync().Coroutine();
-            _onConnectDisconnect?.Invoke();
-            _packetParser.Dispose();
-            _packetParser = null;
-            _isSending = false;
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        _cancellationTokenSource.Cancel();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // 通常情况下，此处的异常可以忽略
+                    }
+                }
+
+                ClearConnectTimeout();
+                WebSocketClientDisposeAsync().Coroutine();
+                _onConnectDisconnect?.Invoke();
+                _packetParser.Dispose();
+                _packetParser = null;
+                _isSending = false;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+            }
+            finally
+            {
+                base.Dispose();
+            }
         }
 
         private async FTask WebSocketClientDisposeAsync()
@@ -161,12 +172,15 @@ namespace Fantasy.Network.WebSocket
                     Dispose();
                     break;
                 }
-                catch (WebSocketException wse)
-                {
-                    Log.Error($"WebSocket error: {wse.Message}");
-                    Dispose();
-                    break;
-                }
+                // 这个先暂时注释掉，因为有些时候会出现WebSocketException
+                // 因为会出现这个挥手的错误，下个版本处理一下。
+                // The remote party closed the WebSocket connection without completing the close handshake.
+                // catch (WebSocketException wse)
+                // {
+                //     Log.Error($"WebSocket error: {wse.Message}");
+                //     Dispose();
+                //     break;
+                // }
                 catch (Exception e)
                 {
                     Log.Error(e);
@@ -324,7 +338,7 @@ namespace Fantasy.Network.WebSocket
                 return;
             }
 
-            Scene.TimerComponent.Net.Remove(ref _connectTimeoutId);
+            Scene?.TimerComponent?.Net?.Remove(ref _connectTimeoutId);
         }
     }
 }

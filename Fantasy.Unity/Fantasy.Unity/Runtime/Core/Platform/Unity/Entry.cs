@@ -1,10 +1,12 @@
 #if FANTASY_UNITY
 using System.Reflection;
 using Cysharp.Threading.Tasks;
+using System.Linq;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using Fantasy.Serialize;
 using UnityEngine;
+
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 #pragma warning disable CS8603 // Possible null reference return.
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -43,7 +45,7 @@ namespace Fantasy.Platform.Unity
         /// 初始化框架
         /// </summary>
         /// <param name="assemblies"></param>
-        public static void Initialize(params System.Reflection.Assembly[] assemblies)
+        public static async FTask Initialize(params System.Reflection.Assembly[] assemblies)
         {
             if (_isInit)
             {
@@ -51,8 +53,7 @@ namespace Fantasy.Platform.Unity
                 return;
             }
             Log.Register(new UnityLog());
-            // 初始化程序集管理系统
-            AssemblySystem.Initialize(assemblies);
+            await AssemblySystem.InnerInitialize(assemblies);
             // 初始化序列化
             SerializerManager.Initialize();
 #if FANTASY_WEBGL

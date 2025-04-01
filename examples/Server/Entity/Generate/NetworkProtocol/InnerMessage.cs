@@ -155,7 +155,7 @@ namespace Fantasy
 	/// <summary>
 	///  Map给另外一个Map发送Unit数据
 	/// </summary>
-	public partial class M2M_SendUnitRequest : AMessage, IRouteRequest, IProto
+	public partial class M2M_SendUnitRequest : AMessage, IRouteRequest
 	{
 		public static M2M_SendUnitRequest Create(Scene scene)
 		{
@@ -171,11 +171,9 @@ namespace Fantasy
 		[BsonIgnore]
 		public M2M_SendUnitResponse ResponseType { get; set; }
 		public uint OpCode() { return InnerOpcode.M2M_SendUnitRequest; }
-		[ProtoMember(1)]
 		public Unit Unit { get; set; }
 	}
-	[ProtoContract]
-	public partial class M2M_SendUnitResponse : AMessage, IRouteResponse, IProto
+	public partial class M2M_SendUnitResponse : AMessage, IRouteResponse
 	{
 		public static M2M_SendUnitResponse Create(Scene scene)
 		{
@@ -189,7 +187,6 @@ namespace Fantasy
 #endif
 		}
 		public uint OpCode() { return InnerOpcode.M2M_SendUnitResponse; }
-		[ProtoMember(1)]
 		public uint ErrorCode { get; set; }
 	}
 	/// <summary>

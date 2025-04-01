@@ -1,6 +1,14 @@
 ﻿using Fantasy;
+using Fantasy.Assembly;
+using Fantasy.ConfigTable;
+using Fantasy.DataBase;
 using Fantasy.Helper;
+using Fantasy.IdFactory;
 using Fantasy.Platform.Net;
+// 设置配置表的路径
+ConfigTableHelper.Initialize("../../../Config/Binary");
+// 设置ID生成规则
+IdFactoryHelper.Initialize(IdFactoryType.World);
 // 获取配置文件
 // 比如通过远程获取这个配置文件，这样可以多组服务器共享一套配置了
 var machineConfigText = await FileHelper.GetTextByRelativePath("../../../Config/Json/Server/MachineConfigData.Json");
@@ -18,7 +26,7 @@ SceneConfigData.Initialize(sceneConfigText);
 // 这里用的是NLog日志系统注册到框架中。
 Fantasy.Log.Register(new Fantasy.NLog("Server"));
 // 初始化框架，添加程序集到框架中
-Fantasy.Platform.Net.Entry.Initialize(Fantasy.AssemblyHelper.Assemblies);
+await Fantasy.Platform.Net.Entry.Initialize(Fantasy.AssemblyHelper.Assemblies);
 // 启动Fantasy.Net
 await Fantasy.Platform.Net.Entry.Start();
 // 也可以使用下面的Start方法来初始化并且启动Fantasy.Net

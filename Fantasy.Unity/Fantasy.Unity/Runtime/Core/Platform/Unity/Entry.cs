@@ -45,7 +45,7 @@ namespace Fantasy.Platform.Unity
         /// 初始化框架
         /// </summary>
         /// <param name="assemblies"></param>
-        public static async FTask Initialize(params System.Reflection.Assembly[] assemblies)
+        public static async UniTask Initialize(params System.Reflection.Assembly[] assemblies)
         {
             if (_isInit)
             {

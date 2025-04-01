@@ -249,7 +249,7 @@ namespace Fantasy.Network
 
             try
             {
-                NetworkMessageScheduler.Scheduler(this, packInfo).Coroutine();
+                NetworkMessageScheduler.Scheduler(this, packInfo).Forget();
             }
             catch (Exception e)
             {

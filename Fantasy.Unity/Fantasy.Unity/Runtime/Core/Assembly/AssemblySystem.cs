@@ -30,7 +30,7 @@ namespace Fantasy.Assembly
         /// 初始化 AssemblySystem。（仅限内部）
         /// </summary>
         /// <param name="assemblies"></param>
-        internal static async FTask InnerInitialize(params System.Reflection.Assembly[] assemblies)
+        internal static async UniTask InnerInitialize(params System.Reflection.Assembly[] assemblies)
         {
             await LoadAssembly(typeof(AssemblySystem).Assembly);
             foreach (var assembly in assemblies)
@@ -44,7 +44,7 @@ namespace Fantasy.Assembly
         /// </summary>
         /// <param name="assembly">要加载的程序集。</param>
         /// <param name="isCurrentDomain">如果当前Domain中已经存在同名的Assembly,使用Domain中的程序集。</param>
-        public static async FTask LoadAssembly(System.Reflection.Assembly assembly, bool isCurrentDomain = true)
+        public static async UniTask LoadAssembly(System.Reflection.Assembly assembly, bool isCurrentDomain = true)
         {
             if (isCurrentDomain)
             {
@@ -82,7 +82,7 @@ namespace Fantasy.Assembly
         /// 卸载程序集
         /// </summary>
         /// <param name="assembly"></param>
-        public static async FTask UnLoadAssembly(System.Reflection.Assembly assembly)
+        public static async UniTask UnLoadAssembly(System.Reflection.Assembly assembly)
         {
             var assemblyIdentity = AssemblyIdentity(assembly);
             
@@ -260,10 +260,10 @@ namespace Fantasy.Assembly
         /// </summary>
         public static void Dispose()
         {
-            DisposeAsync().Coroutine();
+            DisposeAsync().Forget();
         }
         
-        private static async FTask DisposeAsync()
+        private static async UniTask DisposeAsync()
         {
             foreach (var (_, assemblyInfo) in AssemblyList.ToArray())
             {

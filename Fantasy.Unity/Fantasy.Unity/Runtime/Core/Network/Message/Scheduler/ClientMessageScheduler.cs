@@ -1,5 +1,5 @@
 using System;
-using Fantasy.Async;
+using Cysharp.Threading.Tasks;
 using Fantasy.Network;
 using Fantasy.Network.Interface;
 using Fantasy.PacketParser.Interface;
@@ -16,9 +16,9 @@ namespace Fantasy.Scheduler
     {
         public ClientMessageScheduler(Scene scene) : base(scene) { }
 
-        public override async FTask Scheduler(Session session, APackInfo packInfo)
+        public override async UniTask Scheduler(Session session, APackInfo packInfo)
         {
-            await FTask.CompletedTask;
+            await UniTask.CompletedTask;
             switch (packInfo.OpCodeIdStruct.Protocol)
             {
                 case OpCodeType.OuterMessage:

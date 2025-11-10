@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.Network;
 using Fantasy.PacketParser.Interface;
@@ -32,7 +33,7 @@ namespace Fantasy.Scheduler
         /// </summary>
         /// <param name="session">网络会话。</param>
         /// <param name="packInfo">消息封包信息。</param>
-        public override FTask Scheduler(Session session, APackInfo packInfo)
+        public override UniTask Scheduler(Session session, APackInfo packInfo)
         {
             throw new NotSupportedException($"Received unsupported message protocolCode:{packInfo.ProtocolCode}");
         }

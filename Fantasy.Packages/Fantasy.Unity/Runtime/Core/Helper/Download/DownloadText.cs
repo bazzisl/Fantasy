@@ -1,4 +1,6 @@
 #if FANTASY_UNITY
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using UnityEngine.Networking;
 
@@ -10,17 +12,17 @@ namespace Fantasy.Unity.Download
         {
         }
 
-        public FTask<string> StartDownload(string url, bool monitor, FCancellationToken cancellationToken = null)
+        public UniTask<string> StartDownload(string url, bool monitor, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<string>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<string>.Create();
             var unityWebRequestAsyncOperation = Start(UnityWebRequest.Get(url), monitor);
 
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     Dispose();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -31,12 +33,12 @@ namespace Fantasy.Unity.Download
                     if (UnityWebRequest.result == UnityWebRequest.Result.Success)
                     {
                         var text = UnityWebRequest.downloadHandler.text;
-                        task.SetResult(text);
+                        task.TrySetResult(text);
                     }
                     else
                     {
                         Log.Error(UnityWebRequest.error);
-                        task.SetResult(null);
+                        task.TrySetResult(null);
                     }
                 }
                 finally
@@ -45,7 +47,7 @@ namespace Fantasy.Unity.Download
                 }
             };
 
-            return task;
+            return task.Task;
         }
     }
 }

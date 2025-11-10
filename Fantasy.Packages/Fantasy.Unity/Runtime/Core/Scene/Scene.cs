@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.Entitas;
 using Fantasy.Event;
@@ -170,7 +171,7 @@ namespace Fantasy
 
         #region Initialize
 
-        private async FTask Initialize()
+        private async UniTask Initialize()
         {
             EntityPool = new EntityPool();
             EntityListPool = new EntityListPool<Entity>();
@@ -197,12 +198,12 @@ namespace Fantasy
         /// <summary>
         /// Scene的关闭方法
         /// </summary>
-        public async FTask Close()
+        public async UniTask Close()
         {
 #if FANTASY_NET
             await SphereEventComponent?.Close();
 #endif
-            await FTask.CompletedTask;
+            await UniTask.CompletedTask;
             Dispose();
         }
 
@@ -342,7 +343,7 @@ namespace Fantasy
         /// <param name="sceneRuntimeMode">选择Scene的运行方式</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async FTask<Scene> Create(string sceneRuntimeMode = SceneRuntimeMode.MainThread)
+        public static async UniTask<Scene> Create(string sceneRuntimeMode = SceneRuntimeMode.MainThread)
         {
             var world = ++_unityWorldId;
 
@@ -371,7 +372,7 @@ namespace Fantasy
             await SetScheduler(scene, sceneRuntimeMode);
             scene.ThreadSynchronizationContext.Post(() =>
             {
-                scene.EventComponent.PublishAsync(new OnCreateScene(scene)).Coroutine();
+                scene.EventComponent.PublishAsync(new OnCreateScene(scene)).Forget();
             });
             return scene;
         }
@@ -481,7 +482,7 @@ namespace Fantasy
             }
         }
 #endif
-        private static async FTask SetScheduler(Scene scene, string sceneRuntimeMode)
+        private static async UniTask SetScheduler(Scene scene, string sceneRuntimeMode)
         {
             switch (sceneRuntimeMode)
             {

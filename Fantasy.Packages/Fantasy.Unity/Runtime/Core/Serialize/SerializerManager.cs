@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Fantasy.Helper;
 #if !FANTASY_EXPORTER
 using Fantasy.Async;
@@ -40,7 +41,7 @@ namespace Fantasy.Serialize
         /// <summary>
         /// 初始化方法
         /// </summary>
-        public static async FTask Initialize()
+        public static async UniTask Initialize()
         {
             if (_isInitialized)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using Fantasy.DataStructure.Collection;
@@ -40,7 +41,7 @@ namespace Fantasy.Event
         /// 初始化EventComponent，将其注册到程序集系统中
         /// </summary>
         /// <returns>返回初始化后的EventComponent实例</returns>
-        internal async FTask<EventComponent> Initialize()
+        internal async UniTask<EventComponent> Initialize()
         {
             await AssemblyLifecycle.Add(this);
             return this;
@@ -52,9 +53,9 @@ namespace Fantasy.Event
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象，包含程序集的元数据和注册器</param>
         /// <returns>异步任务</returns>
-        public async FTask OnLoad(AssemblyManifest assemblyManifest)
+        public async UniTask OnLoad(AssemblyManifest assemblyManifest)
         {
-            var tcs = FTask.Create(false);
+            var tcs = AutoResetUniTaskCompletionSourcePlus.Create();
             var assemblyManifestId = assemblyManifest.AssemblyManifestId;
             Scene?.ThreadSynchronizationContext.Post(() =>
             {
@@ -68,9 +69,9 @@ namespace Fantasy.Event
                     _events,
                     _asyncEvents);
                 _assemblyManifests.Add(assemblyManifestId);
-                tcs.SetResult();
+                tcs.TrySetResult();
             });
-            await tcs;
+            await tcs.Task;
         }
         
         /// <summary>
@@ -78,15 +79,15 @@ namespace Fantasy.Event
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象，包含程序集的元数据和注册器</param>
         /// <returns>异步任务</returns>
-        public async FTask OnUnload(AssemblyManifest assemblyManifest)
+        public async UniTask OnUnload(AssemblyManifest assemblyManifest)
         {
-            var tcs = FTask.Create(false);
+            var tcs = AutoResetUniTaskCompletionSourcePlus.Create();
             Scene?.ThreadSynchronizationContext.Post(() =>
             {
                 OnUnLoadInner(assemblyManifest);
-                tcs.SetResult();
+                tcs.TrySetResult();
             });
-            await tcs;
+            await tcs.Task;
         }
         
         /// <summary>
@@ -168,21 +169,21 @@ namespace Fantasy.Event
         /// </summary>
         /// <typeparam name="TEventData">事件数据类型（值类型）</typeparam>
         /// <param name="eventData">事件数据</param>
-        public async FTask PublishAsync<TEventData>(TEventData eventData) where TEventData : struct
+        public async UniTask PublishAsync<TEventData>(TEventData eventData) where TEventData : struct
         {
             if (!_asyncEvents.TryGetValue(typeof(TEventData).TypeHandle, out var list))
             {
                 return;
             }
 
-            using var tasks = ListPool<FTask>.Create();
+            using var tasks = ListPool<UniTask>.Create();
 
             foreach (var @event in list)
             {
                 tasks.Add(((IAsyncEvent<TEventData>)@event).InvokeAsync(eventData));
             }
 
-            await FTask.WaitAll(tasks);
+            await UniTask.WhenAll(tasks);
         }
 
         /// <summary>
@@ -191,14 +192,14 @@ namespace Fantasy.Event
         /// <typeparam name="TEventData">事件数据类型（Entity类型）</typeparam>
         /// <param name="eventData">事件数据</param>
         /// <param name="isDisposed">事件处理完成后是否自动销毁Entity</param>
-        public async FTask PublishAsync<TEventData>(TEventData eventData, bool isDisposed = true) where TEventData : Entity
+        public async UniTask PublishAsync<TEventData>(TEventData eventData, bool isDisposed = true) where TEventData : Entity
         {
             if (!_asyncEvents.TryGetValue(typeof(TEventData).TypeHandle, out var list))
             {
                 return;
             }
 
-            using var tasks = ListPool<FTask>.Create();
+            using var tasks = ListPool<UniTask>.Create();
 
             foreach (var @event in list)
             {
@@ -212,7 +213,7 @@ namespace Fantasy.Event
                 }
             }
 
-            await FTask.WaitAll(tasks);
+            await UniTask.WhenAll(tasks);
 
             if (isDisposed)
             {

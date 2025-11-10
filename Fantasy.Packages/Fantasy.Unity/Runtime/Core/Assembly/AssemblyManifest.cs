@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.DataStructure.Collection;
 using Fantasy.Entitas.Interface;
@@ -230,7 +231,7 @@ namespace Fantasy.Assembly
             Manifests.TryAdd(assemblyManifestId, manifest);
 #endif
             customInterfaceRegistrar.Register(manifest.CustomInterfaces);
-            AssemblyLifecycle.OnLoad(manifest).Coroutine();
+            AssemblyLifecycle.OnLoad(manifest).Forget();
         }
 #endif
         /// <summary>
@@ -249,7 +250,7 @@ namespace Fantasy.Assembly
 #else
             if (Manifests.TryRemove(assemblyManifestId, out var manifest))
             {
-                AssemblyLifecycle.OnUnLoad(manifest).Coroutine();
+                AssemblyLifecycle.OnUnLoad(manifest).Forget();
                 manifest.CustomInterfaceRegistrar.UnRegister(manifest.CustomInterfaces);
             }
 #endif
@@ -360,7 +361,7 @@ namespace Fantasy.Assembly
         /// 卸载所有已注册的程序集，触发卸载事件，清理所有注册器和生命周期回调
         /// </summary>
         /// <returns>异步任务</returns>
-        public static async FTask Dispose()
+        public static async UniTask Dispose()
         {
             foreach (var (_, assemblyManifest) in Manifests)
             {

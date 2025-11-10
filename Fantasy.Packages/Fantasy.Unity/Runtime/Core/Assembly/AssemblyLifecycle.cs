@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 
 namespace Fantasy.Assembly
@@ -28,7 +29,7 @@ namespace Fantasy.Assembly
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象</param>
         /// <returns>异步任务</returns>
-        internal static async FTask OnLoad(AssemblyManifest assemblyManifest)
+        internal static async UniTask OnLoad(AssemblyManifest assemblyManifest)
         {
             foreach (var (assemblyLifecycle, _) in AssemblyLifecycles)
             {
@@ -42,7 +43,7 @@ namespace Fantasy.Assembly
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象</param>
         /// <returns>异步任务</returns>
-        internal static async FTask OnUnLoad(AssemblyManifest assemblyManifest)
+        internal static async UniTask OnUnLoad(AssemblyManifest assemblyManifest)
         {
             foreach (var (assemblyLifecycle, _) in AssemblyLifecycles)
             {
@@ -56,7 +57,7 @@ namespace Fantasy.Assembly
         /// 添加后会立即对所有已加载的程序集触发 Load 回调
         /// </summary>
         /// <param name="assemblyLifecycle">实现 IAssemblyLifecycle 接口的生命周期回调对象</param>
-        internal static async FTask Add(IAssemblyLifecycle assemblyLifecycle)
+        internal static async UniTask Add(IAssemblyLifecycle assemblyLifecycle)
         {
 #if FANTASY_WEBGL
             AssemblyLifecycles.Add(assemblyLifecycle, 0);

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.DataStructure.Collection;
 using Fantasy.Helper;
@@ -97,8 +99,8 @@ namespace Fantasy.Timer
                 {
                     case TimerType.OnceWaitTimer:
                     {
-                        var tcs = (FTask<bool>)timerAction.Callback;
-                        tcs.SetResult(true);
+                        var tcs = (AutoResetUniTaskCompletionSourcePlus<bool>)timerAction.Callback;
+                        tcs.TrySetResult(true);
                         break;
                     }
                     case TimerType.OnceTimer:
@@ -147,37 +149,38 @@ namespace Fantasy.Timer
         /// <param name="time">等待的时间长度。</param>
         /// <param name="cancellationToken">取消令牌。</param>
         /// <returns>等待是否成功。</returns>
-        public async FTask<bool> WaitAsync(long time, FCancellationToken cancellationToken = null)
+        public async UniTask<bool> WaitAsync(long time, CancellationTokenSource cancellationToken = null)
         {
             if (time <= 0)
             {
                 return true;
             }
-
             var now = Now();
             var timerId = GetId;
-            var tcs = FTask<bool>.Create();
+            var tcs = AutoResetUniTaskCompletionSourcePlus<bool>.Create();
             var timerAction = new TimerAction(timerId, TimerType.OnceWaitTimer, now, time, tcs);
-
-            void CancelActionVoid()
-            {
-                if (Remove(timerId))
-                {
-                    tcs.SetResult(false);
-                }
-            }
 
             bool result;
 
             try
             {
-                cancellationToken?.Add(CancelActionVoid);
+                if (cancellationToken != null)
+                {
+                    cancellationToken.Token.Register(() =>
+                    {
+                        if (Remove(timerId))
+                        {
+                            tcs.TrySetResult(false);
+                        }
+                    });
+                }
+                
                 AddTimer(ref timerAction);
-                result = await tcs;
+                result = await tcs.Task;
             }
             finally
             {
-                cancellationToken?.Remove(CancelActionVoid);
+                // CancellationTokenSource的Register方法不需要手动移除
             }
 
             return result;
@@ -189,7 +192,7 @@ namespace Fantasy.Timer
         /// <param name="tillTime">等待的目标时间。</param>
         /// <param name="cancellationToken">取消令牌。</param>
         /// <returns>等待是否成功。</returns>
-        public async FTask<bool> WaitTillAsync(long tillTime, FCancellationToken cancellationToken = null)
+        public async UniTask<bool> WaitTillAsync(long tillTime, CancellationTokenSource cancellationToken = null)
         {
             var now = Now();
 
@@ -199,28 +202,30 @@ namespace Fantasy.Timer
             }
 
             var timerId = GetId;
-            var tcs = FTask<bool>.Create();
+            var tcs = AutoResetUniTaskCompletionSourcePlus<bool>.Create();
             var timerAction = new TimerAction(timerId, TimerType.OnceWaitTimer, now, tillTime - now, tcs);
-            
-            void CancelActionVoid()
-            {
-                if (Remove(timerId))
-                {
-                    tcs.SetResult(false);
-                }
-            }
             
             bool result;
 
             try
             {
-                cancellationToken?.Add(CancelActionVoid);
+                if (cancellationToken != null)
+                {
+                    cancellationToken.Token.Register(() =>
+                    {
+                        if (Remove(timerId))
+                        {
+                            tcs.TrySetResult(false);
+                        }
+                    });
+                }
+                
                 AddTimer(ref timerAction);
-                result = await tcs;
+                result = await tcs.Task;
             }
             finally
             {
-                cancellationToken?.Remove(CancelActionVoid);
+                // CancellationTokenSource的Register方法不需要手动移除
             }
 
             return result;
@@ -230,7 +235,7 @@ namespace Fantasy.Timer
         /// 异步等待一帧时间。
         /// </summary>
         /// <returns>等待是否成功。</returns>
-        public async FTask WaitFrameAsync()
+        public async UniTask WaitFrameAsync()
         {
 #if FANTASY_NET
             await WaitAsync(100);

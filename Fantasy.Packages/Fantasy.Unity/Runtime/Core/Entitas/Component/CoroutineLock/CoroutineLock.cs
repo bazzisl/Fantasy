@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -43,7 +44,7 @@ namespace Fantasy.Async
     {
         public Scene Scene { get; }
         public CoroutineLockComponent CoroutineLockComponent { get; }
-        FTask<WaitCoroutineLock> Wait(long waitForId, string tag = null, int timeOut = 30000);
+        UniTask<WaitCoroutineLock> Wait(long waitForId, string tag = null, int timeOut = 30000);
     }
 
     /// <summary>
@@ -93,7 +94,7 @@ namespace Fantasy.Async
         /// <param name="tag">用于查询协程锁的标记，可不传入，只有在超时的时候排查是哪个锁超时时使用</param>
         /// <param name="timeOut">等待多久会超时，当到达设定的时候会把当前锁给按照超时处理</param>
         /// <returns></returns>
-        public async FTask<WaitCoroutineLock> Wait(long waitForId, string tag = null, int timeOut = 30000)
+        public async UniTask<WaitCoroutineLock> Wait(long waitForId, string tag = null, int timeOut = 30000)
         {
             var waitCoroutineLock = CoroutineLockComponent.WaitCoroutineLockPool.Rent(this, ref waitForId, tag, timeOut);
 
@@ -105,7 +106,7 @@ namespace Fantasy.Async
             }
 
             queue.Enqueue(waitCoroutineLock);
-            return await waitCoroutineLock.Tcs;
+            return await waitCoroutineLock.Tcs.Task;
         }
         /// <summary>
         /// 按照先入先出的顺序，释放最早的一个协程锁
@@ -233,7 +234,7 @@ namespace Fantasy.Async
         /// 串行等待某个Id。且同时会总体限流: 超过锁所设定上限数量值的并发FTask等到有空余任务位后再执行。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public async FTask<WaitCoroutineLock> Wait(long waitForId, string tag = null, int timeOut = 30000)
+        public async UniTask<WaitCoroutineLock> Wait(long waitForId, string tag = null, int timeOut = 30000)
         {
             // 先标记 active 增加（只在成功进入临界区时最终减掉）
             Interlocked.Increment(ref _activeCount);
@@ -265,7 +266,7 @@ namespace Fantasy.Async
         /// 限流: 超过锁所设定上限数量值的并发FTask等到有空余任务位后再执行。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public async FTask<WaitCoroutineLock> WaitIfTooMuch(string tag = null, int timeOut = 30000)
+        public async UniTask<WaitCoroutineLock> WaitIfTooMuch(string tag = null, int timeOut = 30000)
         {
             // 先标记 active 增加（只在成功进入临界区时最终减掉）
             Interlocked.Increment(ref _activeCount);
@@ -379,7 +380,7 @@ namespace Fantasy.Async
         /// 清理(异步)
         /// </summary>
         /// <returns></returns>
-        public async FTask<FTaskFlowLock> CleanAsync()
+        public async UniTask<FTaskFlowLock> CleanAsync()
         {
             // 等待正在执行的任务（已进入临界区）的计数归零
             while (Volatile.Read(ref _activeCount) > 0)

@@ -1,6 +1,8 @@
 #if FANTASY_UNITY
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using UnityEngine;
 
@@ -38,32 +40,32 @@ namespace Fantasy.Unity.Download
             Tasks.Clear();
         }
 
-        public FTask<AssetBundle> DownloadAssetBundle(string url, bool monitor = false, FCancellationToken cancellationToken = null)
+        public UniTask<AssetBundle> DownloadAssetBundle(string url, bool monitor = false, CancellationTokenSource cancellationToken = null)
         {
             return new DownloadAssetBundle(Scene, this).StartDownload(url, monitor, cancellationToken);
         }
 
-        public FTask<AudioClip> DownloadAudioClip(string url, AudioType audioType, bool monitor = false, FCancellationToken cancellationToken = null)
+        public UniTask<AudioClip> DownloadAudioClip(string url, AudioType audioType, bool monitor = false, CancellationTokenSource cancellationToken = null)
         {
             return new DownloadAudioClip(Scene, this).StartDownload(url, audioType, monitor, cancellationToken);
         }
 
-        public FTask<Sprite> DownloadSprite(string url, bool monitor = false, FCancellationToken cancellationToken = null)
+        public UniTask<Sprite> DownloadSprite(string url, bool monitor = false, CancellationTokenSource cancellationToken = null)
         {
             return new DownloadSprite(Scene, this).StartDownload(url, monitor, cancellationToken);
         }
         
-        public FTask<Texture> DownloadTexture(string url, bool monitor = false, FCancellationToken cancellationToken = null)
+        public UniTask<Texture> DownloadTexture(string url, bool monitor = false, CancellationTokenSource cancellationToken = null)
         {
             return new DownloadTexture(Scene, this).StartDownload(url, monitor, cancellationToken);
         }
         
-        public FTask<string> DownloadText(string url, bool monitor = false, FCancellationToken cancellationToken = null)
+        public UniTask<string> DownloadText(string url, bool monitor = false, CancellationTokenSource cancellationToken = null)
         {
             return new DownloadText(Scene, this).StartDownload(url, monitor, cancellationToken);
         }
 
-        public FTask<byte[]> DownloadByte(string url, bool monitor = false, FCancellationToken cancellationToken = null)
+        public UniTask<byte[]> DownloadByte(string url, bool monitor = false, CancellationTokenSource cancellationToken = null)
         {
             return new DownloadByte(Scene, this).StartDownload(url, monitor, cancellationToken);
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using Fantasy.Entitas.Interface;
@@ -106,7 +107,7 @@ namespace Fantasy.Entitas
         /// 初始化EntityComponent，将其注册到程序集系统中
         /// </summary>
         /// <returns>返回初始化后的EntityComponent实例</returns>
-        internal async FTask<EntityComponent> Initialize()
+        internal async UniTask<EntityComponent> Initialize()
         {
             await AssemblyLifecycle.Add(this);
             return this;
@@ -118,9 +119,9 @@ namespace Fantasy.Entitas
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象，包含程序集的元数据和注册器</param>
         /// <returns>异步任务</returns>
-        public FTask OnLoad(AssemblyManifest assemblyManifest)
+        public UniTask OnLoad(AssemblyManifest assemblyManifest)
         {
-            var task = FTask.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus.Create();
             var assemblyManifestId = assemblyManifest.AssemblyManifestId;
             Scene?.ThreadSynchronizationContext.Post(() =>
             {
@@ -145,9 +146,9 @@ namespace Fantasy.Entitas
                     _lateUpdateSystems);
 #endif
                 _assemblyManifests.Add(assemblyManifestId);
-                task.SetResult();
+                task.TrySetResult();
             });
-            return task;
+            return task.Task;
         }
         
         /// <summary>
@@ -155,15 +156,15 @@ namespace Fantasy.Entitas
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象，包含程序集的元数据和注册器</param>
         /// <returns>异步任务</returns>
-        public FTask OnUnload(AssemblyManifest assemblyManifest)
+        public UniTask OnUnload(AssemblyManifest assemblyManifest)
         {
-            var task = FTask.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus.Create();
             Scene?.ThreadSynchronizationContext.Post(() =>
             {
                 OnUnLoadInner(assemblyManifest);
-                task.SetResult();
+                task.TrySetResult();
             });
-            return task;
+            return task.Task;
         }
 
         /// <summary>

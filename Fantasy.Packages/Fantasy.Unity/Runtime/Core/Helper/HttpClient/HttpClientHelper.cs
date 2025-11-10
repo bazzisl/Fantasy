@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.Helper;
 using Fantasy.Pool;
@@ -28,7 +29,7 @@ namespace Fantasy.Http
         /// <param name="content"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async FTask<string> CallNotDeserializeByPost(string url, HttpContent content)
+        public static async UniTask<string> CallNotDeserializeByPost(string url, HttpContent content)
         {
             var response = await Client.PostAsync(url, content);
 
@@ -46,7 +47,7 @@ namespace Fantasy.Http
         /// <param name="url"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async FTask<string> CallNotDeserializeByGet(string url)
+        public static async UniTask<string> CallNotDeserializeByGet(string url)
         {
             var response = await Client.GetAsync(url);
 
@@ -65,7 +66,7 @@ namespace Fantasy.Http
         /// <param name="content"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static async FTask<T> CallByPost<T>(string url, HttpContent content)
+        public static async UniTask<T> CallByPost<T>(string url, HttpContent content)
         {
             return await Deserialize<T>(url, await Client.PostAsync(url, content));
         }
@@ -77,7 +78,7 @@ namespace Fantasy.Http
         /// <param name="method"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static async FTask<T> CallByPost<T>(string url, HttpMethod method)
+        public static async UniTask<T> CallByPost<T>(string url, HttpMethod method)
         {
             return await Deserialize<T>(url, await Client.SendAsync(new HttpRequestMessage(method, url)));
         }
@@ -88,7 +89,7 @@ namespace Fantasy.Http
         /// <param name="url"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static async FTask<T> CallByGet<T>(string url)
+        public static async UniTask<T> CallByGet<T>(string url)
         {
             return await Deserialize<T>(url, await Client.GetAsync(url));
         }
@@ -104,7 +105,7 @@ namespace Fantasy.Http
         /// <typeparam name="TRequest"></typeparam>
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
-        public static async FTask<TResponse> Call<TRequest, TResponse>(string url, int id, AuthenticationHeaderValue authentication, string method, params object[] @params) where TRequest : class, IJsonRpcRequest, new()
+        public static async UniTask<TResponse> Call<TRequest, TResponse>(string url, int id, AuthenticationHeaderValue authentication, string method, params object[] @params) where TRequest : class, IJsonRpcRequest, new()
         {
             var request = Pool<TRequest>.Rent();
             using var httpClientPool = HttpClientPool.Create();
@@ -130,7 +131,7 @@ namespace Fantasy.Http
             return default;
         }
 
-        private static async FTask<T> Deserialize<T>(string url, HttpResponseMessage response)
+        private static async UniTask<T> Deserialize<T>(string url, HttpResponseMessage response)
         {
             if (response.StatusCode != HttpStatusCode.OK)
             {

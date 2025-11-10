@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 
 namespace Fantasy.Assembly
@@ -16,7 +17,7 @@ namespace Fantasy.Assembly
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象，包含程序集的元数据和注册器</param>
         /// <returns>异步任务</returns>
-        FTask OnLoad(AssemblyManifest assemblyManifest);
+        UniTask OnLoad(AssemblyManifest assemblyManifest);
 
         /// <summary>
         /// 程序集卸载时调用
@@ -24,6 +25,6 @@ namespace Fantasy.Assembly
         /// </summary>
         /// <param name="assemblyManifest">程序集清单对象，包含程序集的元数据和注册器</param>
         /// <returns>异步任务</returns>
-        FTask OnUnload(AssemblyManifest assemblyManifest);
+        UniTask OnUnload(AssemblyManifest assemblyManifest);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using Fantasy.DataStructure.Dictionary;
@@ -89,16 +90,16 @@ namespace Fantasy.Network.Interface
 
         #region AssemblyManifest
 
-        internal async FTask<MessageDispatcherComponent> Initialize()
+        internal async UniTask<MessageDispatcherComponent> Initialize()
         {
             _receiveRouteMessageLock = Scene.CoroutineLockComponent.Create(GetType().TypeHandle.Value.ToInt64());
             await AssemblyLifecycle.Add(this);
             return this;
         }
 
-        public async FTask OnLoad(AssemblyManifest assemblyManifest)
+        public async UniTask OnLoad(AssemblyManifest assemblyManifest)
         {
-            var tcs = FTask.Create(false);
+            var tcs = AutoResetUniTaskCompletionSourcePlus.Create();
             var assemblyManifestId = assemblyManifest.AssemblyManifestId;
             Scene?.ThreadSynchronizationContext.Post(() =>
             {
@@ -154,20 +155,20 @@ namespace Fantasy.Network.Interface
                     _responseTypeDictionary = new UInt32FrozenDictionary<Type>(opCodes, types);
                 }
                 _assemblyManifests.Add(assemblyManifestId);
-                tcs.SetResult();
+                tcs.TrySetResult();
             });
-            await tcs;
+            await tcs.Task;
         }
 
-        public async FTask OnUnload(AssemblyManifest assemblyManifest)
+        public async UniTask OnUnload(AssemblyManifest assemblyManifest)
         {
-            var tcs = FTask.Create(false);
+            var tcs = AutoResetUniTaskCompletionSourcePlus.Create();
             Scene?.ThreadSynchronizationContext.Post(() =>
             {
                 OnUnLoadInner(assemblyManifest);
-                tcs.SetResult();
+                tcs.TrySetResult();
             });
-            await tcs;
+            await tcs.Task;
         }
 
         private void OnUnLoadInner(AssemblyManifest assemblyManifest)

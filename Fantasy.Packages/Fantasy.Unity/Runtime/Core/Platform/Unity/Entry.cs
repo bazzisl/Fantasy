@@ -1,6 +1,7 @@
 #if FANTASY_UNITY
 using System;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using Fantasy.Serialize;
@@ -43,7 +44,7 @@ namespace Fantasy.Platform.Unity
         /// <summary>
         /// 初始化框架
         /// </summary>
-        public static async FTask Initialize()
+        public static async UniTask Initialize()
         {
             if (_isInit)
             {
@@ -70,7 +71,7 @@ namespace Fantasy.Platform.Unity
         /// <param name="arg"></param>
         /// <param name="sceneRuntimeMode"></param>
         /// <returns></returns>
-        public static async FTask<Scene> CreateScene(object arg = null, string sceneRuntimeMode = SceneRuntimeMode.MainThread)
+        public static async UniTask<Scene> CreateScene(object arg = null, string sceneRuntimeMode = SceneRuntimeMode.MainThread)
         {
             Scene?.Dispose();
             Scene = await Scene.Create(sceneRuntimeMode);
@@ -94,10 +95,10 @@ namespace Fantasy.Platform.Unity
 
         private void OnDestroy()
         {
-            OnDestroyAsync().Coroutine();
+            OnDestroyAsync().Forget();
         }
 
-        private async FTask OnDestroyAsync()
+        private async UniTask OnDestroyAsync()
         {
             if (Scene != null)
             {

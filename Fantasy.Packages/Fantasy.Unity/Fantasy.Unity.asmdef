@@ -1,7 +1,9 @@
 {
     "name": "Fantasy.Unity",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "UniTask"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
@@ -10,8 +12,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false,
-    "defineSymbols": [
-        "FANTASY_UNITY"
-    ]
+    "noEngineReferences": false
 }

@@ -1,5 +1,7 @@
 #if FANTASY_UNITY
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -12,17 +14,17 @@ namespace Fantasy.Unity.Download
         {
         }
 
-        public FTask<AudioClip> StartDownload(string url, AudioType audioType, bool monitor, FCancellationToken cancellationToken = null)
+        public UniTask<AudioClip> StartDownload(string url, AudioType audioType, bool monitor, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<AudioClip>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<AudioClip>.Create();
             var unityWebRequestAsyncOperation = Start(UnityWebRequestMultimedia.GetAudioClip(Uri.EscapeUriString(url), audioType), monitor);
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     Dispose();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -33,12 +35,12 @@ namespace Fantasy.Unity.Download
                     if (UnityWebRequest.result == UnityWebRequest.Result.Success)
                     {
                         var audioClip = DownloadHandlerAudioClip.GetContent(UnityWebRequest);
-                        task.SetResult(audioClip);
+                        task.TrySetResult(audioClip);
                     }
                     else
                     {
                         Log.Error(UnityWebRequest.error);
-                        task.SetResult(null);
+                        task.TrySetResult(null);
                     }
                 }
                 finally
@@ -47,7 +49,7 @@ namespace Fantasy.Unity.Download
                 }
             };
 
-            return task;
+            return task.Task;
         }
     }
 }

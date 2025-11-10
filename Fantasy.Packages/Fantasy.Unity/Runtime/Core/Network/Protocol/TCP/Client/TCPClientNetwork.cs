@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.Helper;
 using Fantasy.Network.Interface;
@@ -177,13 +178,13 @@ namespace Fantasy.Network.TCP
         {
             ClearConnectTimeout();
             _onConnectComplete?.Invoke();
-            ReadPipeDataAsync().Coroutine();
-            ReceiveSocketAsync().Coroutine();
+            ReadPipeDataAsync().Forget();
+            ReceiveSocketAsync().Forget();
         }
 
         #region ReceiveSocket
 
-        private async FTask ReceiveSocketAsync()
+        private async UniTask ReceiveSocketAsync()
         {
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
@@ -229,7 +230,7 @@ namespace Fantasy.Network.TCP
         
         #region ReceivePipeData
 
-        private async FTask ReadPipeDataAsync()
+        private async UniTask ReadPipeDataAsync()
         {
             var pipeReader = _pipe.Reader;
             while (!_cancellationTokenSource.IsCancellationRequested)

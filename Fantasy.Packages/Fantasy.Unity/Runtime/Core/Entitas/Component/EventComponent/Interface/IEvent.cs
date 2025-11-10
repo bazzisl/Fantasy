@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 
 namespace Fantasy.Event
@@ -38,7 +39,7 @@ namespace Fantasy.Event
         /// 异步事件调用入口
         /// </summary>
         /// <param name="self">事件数据</param>
-        FTask InvokeAsync(T self);
+        UniTask InvokeAsync(T self);
     }
 
     /// <summary>
@@ -51,7 +52,7 @@ namespace Fantasy.Event
         /// 领域事件调用入口
         /// </summary>
         /// <param name="self">事件数据</param>
-        FTask Invoke(T self);
+        UniTask Invoke(T self);
     }
     
     /// <summary>
@@ -113,13 +114,13 @@ namespace Fantasy.Event
         /// 事件调用的方法，要在这个方法里编写事件发生的逻辑
         /// </summary>
         /// <param name="self"></param>
-        protected abstract FTask Handler(T self);
+        protected abstract UniTask Handler(T self);
 
         /// <summary>
         /// 泛型异步调用入口
         /// </summary>
         /// <param name="self">事件数据</param>
-        public async FTask InvokeAsync(T self)
+        public async UniTask InvokeAsync(T self)
         {
             try
             {

@@ -2,6 +2,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Fantasy.Assembly;
 using Fantasy.Async;
 using ProtoBuf;
@@ -19,9 +20,9 @@ namespace Fantasy.Serialize
         /// </summary>
         public string SerializeName { get; } = "ProtoBuf";
 
-        internal async FTask<ProtoBufPackHelper> Initialize()
+        internal async UniTask<ProtoBufPackHelper> Initialize()
         {
-            await FTask.CompletedTask;
+            await UniTask.CompletedTask;
             return this;
         }
 

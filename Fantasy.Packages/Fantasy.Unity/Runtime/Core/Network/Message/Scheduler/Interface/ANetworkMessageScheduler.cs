@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.Network;
 using Fantasy.Network.Interface;
@@ -25,6 +26,6 @@ namespace Fantasy.Scheduler
             NetworkMessagingComponent = scene.NetworkMessagingComponent;
 #endif
         }
-        public abstract FTask Scheduler(Session session, APackInfo packInfo);
+        public abstract UniTask Scheduler(Session session, APackInfo packInfo);
     }
 }

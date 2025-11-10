@@ -1,5 +1,6 @@
 #if FANTASY_UNITY
 using System;
+using System.Threading;
 using Fantasy.Async;
 using UnityEngine.Networking;
 
@@ -11,7 +12,7 @@ namespace Fantasy.Unity.Download
         private ulong _totalDownloadedBytes;
         private Download _download;
         protected UnityWebRequest UnityWebRequest;
-        private FCancellationToken _cancellationToken;
+        private CancellationTokenSource _cancellationToken;
         private Scene Scene;
 
         protected AUnityDownload(Scene scene,Download download)

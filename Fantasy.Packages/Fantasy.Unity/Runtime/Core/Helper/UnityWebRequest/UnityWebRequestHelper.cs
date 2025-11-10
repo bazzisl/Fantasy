@@ -1,5 +1,7 @@
 #if FANTASY_UNITY
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -17,18 +19,18 @@ namespace Fantasy.Unity
         /// <param name="url"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static FTask<string> GetText(string url, FCancellationToken cancellationToken = null)
+        public static UniTask<string> GetText(string url, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<string>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<string>.Create();
             var unityWebRequest = UnityWebRequest.Get(url);
             var unityWebRequestAsyncOperation = unityWebRequest.SendWebRequest();
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     unityWebRequest.Abort();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -37,16 +39,16 @@ namespace Fantasy.Unity
                 if (unityWebRequest.result == UnityWebRequest.Result.Success)
                 {
                     var text = unityWebRequest.downloadHandler.text;
-                    task.SetResult(text);
+                    task.TrySetResult(text);
                 }
                 else
                 {
                     Log.Error(unityWebRequest.error);
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 }
             };
 
-            return task;
+            return task.Task;
         }
         
         /// <summary>
@@ -55,18 +57,18 @@ namespace Fantasy.Unity
         /// <param name="url"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static FTask<Sprite> GetSprite(string url, FCancellationToken cancellationToken = null)
+        public static UniTask<Sprite> GetSprite(string url, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<Sprite>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<Sprite>.Create();
             var unityWebRequest = UnityWebRequestTexture.GetTexture(Uri.EscapeUriString(url));
             var unityWebRequestAsyncOperation = unityWebRequest.SendWebRequest();
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     unityWebRequest.Abort();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -76,16 +78,16 @@ namespace Fantasy.Unity
                 {
                     var texture = DownloadHandlerTexture.GetContent(unityWebRequest);
                     var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 5, 1f);
-                    task.SetResult(sprite);
+                    task.TrySetResult(sprite);
                 }
                 else
                 {
                     Log.Error(unityWebRequest.error);
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 }
             };
 
-            return task;
+            return task.Task;
         }
 
         /// <summary>
@@ -94,18 +96,18 @@ namespace Fantasy.Unity
         /// <param name="url"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static FTask<Texture> GetTexture(string url, FCancellationToken cancellationToken = null)
+        public static UniTask<Texture> GetTexture(string url, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<Texture>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<Texture>.Create();
             var unityWebRequest = UnityWebRequestTexture.GetTexture(Uri.EscapeUriString(url));
             var unityWebRequestAsyncOperation = unityWebRequest.SendWebRequest();
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     unityWebRequest.Abort();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -114,16 +116,16 @@ namespace Fantasy.Unity
                 if (unityWebRequest.result == UnityWebRequest.Result.Success)
                 {
                     var texture = DownloadHandlerTexture.GetContent(unityWebRequest);
-                    task.SetResult(texture);
+                    task.TrySetResult(texture);
                 }
                 else
                 {
                     Log.Error(unityWebRequest.error);
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 }
             };
 
-            return task;
+            return task.Task;
         }
         
         /// <summary>
@@ -132,18 +134,18 @@ namespace Fantasy.Unity
         /// <param name="url"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static FTask<byte[]> GetBytes(string url, FCancellationToken cancellationToken = null)
+        public static UniTask<byte[]> GetBytes(string url, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<byte[]>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<byte[]>.Create();
             var unityWebRequest = UnityWebRequest.Get(url);
             var unityWebRequestAsyncOperation = unityWebRequest.SendWebRequest();
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     unityWebRequest.Abort();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -152,16 +154,16 @@ namespace Fantasy.Unity
                 if (unityWebRequest.result == UnityWebRequest.Result.Success)
                 {
                     var bytes = unityWebRequest.downloadHandler.data;
-                    task.SetResult(bytes);
+                    task.TrySetResult(bytes);
                 }
                 else
                 {
                     Log.Error(unityWebRequest.error);
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 }
             };
 
-            return task;
+            return task.Task;
         }
         
         /// <summary>
@@ -170,18 +172,18 @@ namespace Fantasy.Unity
         /// <param name="url"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static FTask<AssetBundle> GetAssetBundle(string url, FCancellationToken cancellationToken = null)
+        public static UniTask<AssetBundle> GetAssetBundle(string url, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<AssetBundle>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<AssetBundle>.Create();
             var unityWebRequest = UnityWebRequestAssetBundle.GetAssetBundle(Uri.EscapeUriString(url));
             var unityWebRequestAsyncOperation = unityWebRequest.SendWebRequest();
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     unityWebRequest.Abort();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
 
@@ -190,15 +192,15 @@ namespace Fantasy.Unity
                 if (unityWebRequest.result == UnityWebRequest.Result.Success)
                 {
                     var assetBundle = DownloadHandlerAssetBundle.GetContent(unityWebRequest);
-                    task.SetResult(assetBundle);
+                    task.TrySetResult(assetBundle);
                     return;
                 }
 
                 Log.Error(unityWebRequest.error);
-                task.SetResult(null);
+                task.TrySetResult(null);
             };
 
-            return task;
+            return task.Task;
         }
 
         /// <summary>
@@ -208,18 +210,18 @@ namespace Fantasy.Unity
         /// <param name="audioType"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static FTask<AudioClip> GetAudioClip(string url, AudioType audioType, FCancellationToken cancellationToken = null)
+        public static UniTask<AudioClip> GetAudioClip(string url, AudioType audioType, CancellationTokenSource cancellationToken = null)
         {
-            var task = FTask<AudioClip>.Create(false);
+            var task = AutoResetUniTaskCompletionSourcePlus<AudioClip>.Create();
             var unityWebRequest = UnityWebRequestMultimedia.GetAudioClip(Uri.EscapeUriString(url), audioType);
             var unityWebRequestAsyncOperation = unityWebRequest.SendWebRequest();
             
             if (cancellationToken != null)
             {
-                cancellationToken.Add(() =>
+                cancellationToken.Token.Register(() =>
                 {
                     unityWebRequest.Abort();
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 });
             }
             
@@ -228,16 +230,16 @@ namespace Fantasy.Unity
                 if (unityWebRequest.result == UnityWebRequest.Result.Success)
                 {
                     var audioClip = DownloadHandlerAudioClip.GetContent(unityWebRequest);
-                    task.SetResult(audioClip);
+                    task.TrySetResult(audioClip);
                 }
                 else
                 {
                     Log.Error(unityWebRequest.error);
-                    task.SetResult(null);
+                    task.TrySetResult(null);
                 }
             };
 
-            return task;
+            return task.Task;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using Cysharp.Threading.Tasks;
 using Fantasy.Async;
 using Fantasy.Entitas;
 using Fantasy.Entitas.Interface;
@@ -45,7 +46,7 @@ namespace Fantasy.Network
         /// </summary>
         public IPEndPoint RemoteEndPoint { get; private set; }
         private ANetworkMessageScheduler NetworkMessageScheduler { get; set;}
-        internal readonly Dictionary<long, FTask<IResponse>> RequestCallback = new();
+        internal readonly Dictionary<long, AutoResetUniTaskCompletionSourcePlus<IResponse>> RequestCallback = new();
         /// <summary>
         /// Session的Dispose委托
         /// </summary>
@@ -168,7 +169,7 @@ namespace Fantasy.Network
             // 终止所有等待中的请求回调
             foreach (var requestCallback in RequestCallback.Values.ToArray())
             {
-                requestCallback.SetException(new Exception($"session is dispose: {Id}"));
+                requestCallback.TrySetException(new Exception($"session is dispose: {Id}"));
             }
             
             RequestCallback.Clear();
@@ -207,18 +208,18 @@ namespace Fantasy.Network
         /// <param name="request">请求消息的实例</param>
         /// <param name="routeId">routeId</param>
         /// <returns></returns>
-        public virtual FTask<IResponse> Call<T>(T request, long routeId = 0) where T : IRequest
+        public virtual UniTask<IResponse> Call<T>(T request, long routeId = 0) where T : IRequest
         {
             if (IsDisposed)
             {
-                return null;
+                return default;
             }
             
-            var requestCallback = FTask<IResponse>.Create();
+            var requestCallback = AutoResetUniTaskCompletionSourcePlus<IResponse>.Create();
             var rpcId = ++_rpcId; 
             RequestCallback.Add(rpcId, requestCallback);
             Send<T>(request, rpcId, routeId);
-            return requestCallback;
+            return requestCallback.Task;
         }
 
         internal void Receive(APackInfo packInfo)
@@ -232,7 +233,7 @@ namespace Fantasy.Network
 
             try
             {
-                NetworkMessageScheduler.Scheduler(this, packInfo).Coroutine();
+                NetworkMessageScheduler.Scheduler(this, packInfo).Forget();
             }
             catch (Exception e)
             {
